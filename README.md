@@ -32,8 +32,8 @@ You will be building an internal dashboard to query a SQL database using natural
 - Create an OpenAI api key for this project (you will need to provide a credit card to make an account, but this unit should cost less than $1).
 - Store your OPENAI_API_KEY (along with your SUPABASE_URI) in your `.env` file
 - **TDD will be extremely beneficial**, especially as you get to the prompting portion! The less familiar you are with a given technology / challenge, the more helpful TDD can be. ✅
-- Integrate your DB (you can create a `Pool` directly in the controller).
-- Integrate `gpt-4o` for chat completions.
+- Integrate your DB using the `pg` package: `import { Pool } from 'pg'`. You **must** use a `Pool` (not just `Client`) with Supabase's **Session pooler** (included in free accounts). Get your connection string from your Supabase dashboard's "Connect" button and select "Session pooler". You can create the `Pool` directly in the controller.
+- Integrate `gpt-4o` using OpenAI's **Responses API** (introduced in March 2025, which provides stateful interactions, built-in tool support, and improved performance). See the [Responses API documentation](https://platform.openai.com/docs/api-reference/responses) for implementation details.
 
 ### Prompt evaluation
 
@@ -77,7 +77,7 @@ Fill in relevant context from previous answers as needed!
 
 **Use strategies from the prompting lecture!**
 
-And look at the API reference docs. In addition to modifying the prompt itself, are there other request body properties (like `temperature`) that you should specify and iterate on? Are there response body properties (like `logprobs`) that could give you additional insight?
+And look at the [OpenAI Responses API documentation](https://platform.openai.com/docs/api-reference/responses). In addition to modifying the prompt itself, are there other request body properties (like `temperature`, `top_p`, `max_output_tokens`, or `stream`) that you should specify and iterate on? The Responses API also offers interesting features like **reasoning summaries** and **built-in tools** - check the documentation to see what's available with your chosen model!
 
 ### Build your golden (ground truth) dataset
 
