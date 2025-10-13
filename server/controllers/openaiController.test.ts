@@ -4,10 +4,8 @@ import OpenAI from 'openai';
 
 jest.mock('openai', () => {
   const mOpenAI = {
-    chat: {
-      completions: {
-        create: jest.fn(),
-      },
+    responses: {
+      create: jest.fn(),
     },
   };
   return jest.fn(() => mOpenAI);
@@ -17,7 +15,7 @@ describe('queryOpenAI', () => {
   let req: Partial<Request>;
   let res: Partial<Response>;
   let next: NextFunction;
-  let mockOpenAI: jest.Mocked<Partial<OpenAI>>;
+  let mockOpenAI: any;
 
   beforeEach(() => {
     req = {};
@@ -39,9 +37,9 @@ describe('queryOpenAI', () => {
     });
   });
 
-  it('should return an error if OpenAI does not return a completion', async () => {
+  it('should return an error if OpenAI does not return a response', async () => {
     res.locals!.naturalLanguageQuery = '???';
-    (mockOpenAI.chat?.completions.create as jest.Mock).mockResolvedValue({
+    (mockOpenAI.responses?.create as jest.Mock).mockResolvedValue({
       choices: [{ message: { content: '' } }],
     });
 
@@ -49,16 +47,16 @@ describe('queryOpenAI', () => {
 
     expect(next).toHaveBeenCalledWith(
       expect.objectContaining({
-        log: 'OpenAI did not return a completion',
+        log: 'OpenAI did not return a response',
         status: 500,
         message: { err: 'An error occurred while querying OpenAI' },
       })
     );
   });
 
-  it('should set res.locals.databaseQuery if OpenAI returns a valid completion', async () => {
+  it('should set res.locals.databaseQuery if OpenAI returns a valid response', async () => {
     res.locals!.naturalLanguageQuery = 'Name the person with white eyes';
-    (mockOpenAI.chat?.completions.create as jest.Mock).mockResolvedValue({
+    (mockOpenAI.responses?.create as jest.Mock).mockResolvedValue({
       choices: [
         {
           message: {
@@ -82,7 +80,7 @@ describe('queryOpenAI', () => {
 
   it('should return an error if OpenAI throws an error', async () => {
     res.locals!.naturalLanguageQuery = 'Name the person with white eyes';
-    (mockOpenAI.chat?.completions.create as jest.Mock).mockRejectedValue(
+    (mockOpenAI.responses?.create as jest.Mock).mockRejectedValue(
       new Error('OpenAI error')
     );
 
