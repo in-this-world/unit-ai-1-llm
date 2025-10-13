@@ -66,7 +66,7 @@ Keep in mind the following goals:
 
 ### A functional prototype!
 
-You will have achieved sufficient functionality when you can successfully complete [Hunting the Hunter: A Star Wars Adventure](http://hunting-the-hunter1.us-west-2.elasticbeanstalk.com/) using your dashboard. You should enter information given in the challenge into the dashboard form – for example:
+You will have achieved sufficient functionality when you can successfully complete [Hunting the Hunter: A Star Wars Adventure](https://hunting-the-hunter.codesmith.deno.net/) using your dashboard. You should enter information given in the challenge into the dashboard form – for example:
 
 ```text
 story: 'The message is a short hologram showing a woman with black hair and brown eyes.'
