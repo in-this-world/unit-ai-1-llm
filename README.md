@@ -1,6 +1,6 @@
-# Unit AI-1: Natural Language DB Interface
+# Unit Challenge: LLMs
 
-## Summary
+## Overview
 
 You will be building an internal dashboard to query a SQL database using natural language. For obvious reasons, everyone at your company needs access to your curated collection of information about the Star Wars universe. 🌌
 
@@ -13,10 +13,9 @@ You will be building an internal dashboard to query a SQL database using natural
 
 ## Getting started
 
-- Fork and clone this repo
-- Add an `upstream` link to the CodesmithLLC repo
-- Add a `partner` link to your partner's repo
-- Use `git push origin main` and `git pull partner main` to stay in sync
+- [ ] Fork and clone this repository. If you need a refresher, just follow the instructions found [here](https://github.com/CodesmithLLC/dev-environment-setup/blob/main/fork-clone.md)!
+
+- [ ] Run `npm install` to install any dependencies
 
 ## Challenges
 
