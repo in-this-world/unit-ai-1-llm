@@ -15,6 +15,8 @@ You will be building an internal dashboard to query a SQL database using natural
 
 - [ ] Fork and clone this repository. If you need a refresher, just follow the instructions found [here](https://github.com/CodesmithLLC/dev-environment-setup/blob/main/fork-clone.md)!
 
+- [ ] Ensure you're using Node.js 20 LTS or later (required for the OpenAI Responses API). Check your version with `node --version`
+
 - [ ] Run `npm install` to install any dependencies
 
 ## Challenges
@@ -29,11 +31,11 @@ You will be building an internal dashboard to query a SQL database using natural
 
 ### App setup
 
-- Create an OpenAI api key for this project (you will need to provide a credit card to make an account, but this unit should cost less than $1).
-- Store your OPENAI_API_KEY (along with your SUPABASE_URI) in your `.env` file
+- Create an OpenAI API key for this project (you will need to provide a credit card to make an account, but this unit should cost less than $1).
+- Store your `OPENAI_API_KEY` (along with your SUPABASE_URI) in your `.env` file
 - **TDD will be extremely beneficial**, especially as you get to the prompting portion! The less familiar you are with a given technology / challenge, the more helpful TDD can be. ✅
 - Integrate your DB using the `pg` package: `import { Pool } from 'pg'`. You **must** use a `Pool` (not just `Client`) with Supabase's **Session pooler** (included in free accounts). Get your connection string from your Supabase dashboard's "Connect" button and select "Session pooler". You can create the `Pool` directly in the controller.
-- Integrate `gpt-4o` using OpenAI's **Responses API** (introduced in March 2025, which provides stateful interactions, built-in tool support, and improved performance). See the [Responses API documentation](https://platform.openai.com/docs/api-reference/responses) for implementation details.
+- Integrate `gpt-4o` using OpenAI's **Responses API** (introduced in 2025). This replaces the older Completions API and supports built-in structured outputs, tool calling, and streaming responses. The Responses API is also much faster and cheaper to run. See the [Responses API documentation](https://platform.openai.com/docs/api-reference/responses) for implementation details.
 
 ### Prompt evaluation
 
@@ -57,7 +59,7 @@ Keep in mind the following goals:
 - Accuracy (valid SQL queries that produce the intended results)
 - Reliability (valid results at least X% of the time)
 - Consistency (semantically equivalent queries treated similarly)
-  - Flexibility (valid results with confusing / poorly worded input)
+- Flexibility (valid results with confusing / poorly worded input)
 - Grounding (authoritative basis for assertions)
 - Confidence (acknowledge uncertainty)
 - Interpretability (be able to show reasoning / how response was generated)
@@ -77,7 +79,7 @@ Fill in relevant context from previous answers as needed!
 
 **Use strategies from the prompting lecture!**
 
-And look at the [OpenAI Responses API documentation](https://platform.openai.com/docs/api-reference/responses). In addition to modifying the prompt itself, are there other request body properties (like `temperature`, `top_p`, `max_output_tokens`, or `stream`) that you should specify and iterate on? The Responses API also offers interesting features like **reasoning summaries** and **built-in tools** - check the documentation to see what's available with your chosen model!
+And look at the [OpenAI Responses API documentation](https://platform.openai.com/docs/api-reference/responses). Besides modifying your prompt itself, experiment with request properties like `temperature` (or `top_p`), `max_output_tokens`, `seed`, `response_format`, and `stream`. These control randomness, cost, reproducibility, and structure. The Responses API also supports **built-in tools** and **structured outputs**, which are perfect for enforcing a consistent SQL format or returning valid JSON objects. Review a few example requests in the documentation to see how to combine these properties effectively.
 
 ### Build your golden (ground truth) dataset
 
@@ -106,7 +108,8 @@ Now that you’ve built a functional prototype and have adequate testing in plac
 ### How can you reduce costs?
 
 - Can you use fewer tokens?
-- Consider that gpt-4o-mini is (as of writing) 17x cheaper than gpt-4o! Switch to gpt-4o-mini and use your excellent testing setup to ensure your prompt still works well enough.
+- Consider that `gpt-4o-mini` is significantly cheaper than `gpt-4o`! Switch to `gpt-4o-mini` and use your excellent testing setup to ensure your prompt still works well enough.
+- The Responses API lets you set `max_output_tokens` and reuse prompt caching features to save both cost and latency. Caching is free for repeated prompts and automatically reuses the embedding of identical input. (`max_output_tokens` limits how many tokens the model can return; both input and output tokens count toward cost).
 
 ### How can you reduce latency?
 
