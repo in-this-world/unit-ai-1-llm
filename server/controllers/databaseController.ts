@@ -16,6 +16,9 @@ export const queryStarWarsDatabase: RequestHandler = async (
     return next(error);
   }
 
-    res.locals.databaseQueryResult = [{ name: 'Sly Moore' }]
-    return next();
+  // TODO: Add your code here to execute the SQL query against your Supabase database
+  // Use the databaseQuery from res.locals to query the database
+  // Store the results in res.locals.databaseQueryResult
+  res.locals.databaseQueryResult = [{ name: 'Sly Moore' }]
+  return next();
 };

@@ -4,32 +4,28 @@ import OpenAI from 'openai';
 
 jest.mock('openai', () => {
   const mOpenAI = {
-    chat: {
-      completions: {
-        create: jest.fn(),
-      },
+    responses: {
+      create: jest.fn(),
     },
   };
   return jest.fn(() => mOpenAI);
 });
 
-describe('queryOpenAI', () => {
+describe('queryOpenAI (Responses API)', () => {
   let req: Partial<Request>;
   let res: Partial<Response>;
   let next: NextFunction;
-  let mockOpenAI: jest.Mocked<Partial<OpenAI>>;
+  let mockOpenAI: any;
 
   beforeEach(() => {
     req = {};
-    res = {
-      locals: {},
-    };
+    res = { locals: {} };
     next = jest.fn();
     mockOpenAI = new OpenAI();
     jest.clearAllMocks();
   });
 
-  it('should return an error if no naturalLanguageQuery is provided', async () => {
+  it('returns an error if no naturalLanguageQuery is provided', async () => {
     await queryOpenAI(req as Request, res as Response, next);
 
     expect(next).toHaveBeenCalledWith({
@@ -39,34 +35,28 @@ describe('queryOpenAI', () => {
     });
   });
 
-  it('should return an error if OpenAI does not return a completion', async () => {
+  it('returns an error if OpenAI returns an empty response', async () => {
     res.locals!.naturalLanguageQuery = '???';
-    (mockOpenAI.chat?.completions.create as jest.Mock).mockResolvedValue({
-      choices: [{ message: { content: '' } }],
+    (mockOpenAI.responses.create as jest.Mock).mockResolvedValue({
+      output_text: '',
     });
 
     await queryOpenAI(req as Request, res as Response, next);
 
     expect(next).toHaveBeenCalledWith(
       expect.objectContaining({
-        log: 'OpenAI did not return a completion',
+        log: 'OpenAI did not return a response',
         status: 500,
         message: { err: 'An error occurred while querying OpenAI' },
       })
     );
   });
 
-  it('should set res.locals.databaseQuery if OpenAI returns a valid completion', async () => {
+  it('should set res.locals.databaseQuery when OpenAI returns a valid response', async () => {
     res.locals!.naturalLanguageQuery = 'Name the person with white eyes';
-    (mockOpenAI.chat?.completions.create as jest.Mock).mockResolvedValue({
-      choices: [
-        {
-          message: {
-            content:
-              "```sql\nSELECT name FROM public.people WHERE eye_color = 'white';\n```",
-          },
-        },
-      ],
+    (mockOpenAI.responses.create as jest.Mock).mockResolvedValue({
+      output_text:
+        "```sql\nSELECT name FROM public.people WHERE eye_color = 'white';\n```",
     });
 
     await queryOpenAI(req as Request, res as Response, next);
@@ -76,13 +66,12 @@ describe('queryOpenAI', () => {
         "SELECT name FROM public.people WHERE eye_color = 'white';"
       )
     );
-
     expect(next).toHaveBeenCalled();
   });
 
   it('should return an error if OpenAI throws an error', async () => {
     res.locals!.naturalLanguageQuery = 'Name the person with white eyes';
-    (mockOpenAI.chat?.completions.create as jest.Mock).mockRejectedValue(
+    (mockOpenAI.responses.create as jest.Mock).mockRejectedValue(
       new Error('OpenAI error')
     );
 
