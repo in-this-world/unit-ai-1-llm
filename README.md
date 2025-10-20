@@ -30,7 +30,7 @@ You will be building an internal dashboard to query a SQL database using natural
 
 ### App setup
 
-- Create an OpenAI api key for this project (you will need to provide a credit card to make an account, but this unit should cost less than $1).
+- Create an OpenAI API key for this project (you will need to provide a credit card to make an account, but this unit should cost less than $1).
 - Store your OPENAI_API_KEY (along with your SUPABASE_URI) in your `.env` file
 - **TDD will be extremely beneficial**, especially as you get to the prompting portion! The less familiar you are with a given technology / challenge, the more helpful TDD can be. ✅
 - Integrate your DB (you can create a `Pool` directly in the controller).

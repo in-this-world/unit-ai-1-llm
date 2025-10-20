@@ -2,12 +2,17 @@ import { queryOpenAI } from './openaiController';
 import { Request, Response, NextFunction } from 'express';
 import OpenAI from 'openai';
 
+type MockOpenAI = {
+  responses: {
+    create: jest.Mock;
+  };
+};
+
 jest.mock('openai', () => {
+  const create = jest.fn();
   const mOpenAI = {
-    chat: {
-      completions: {
-        create: jest.fn(),
-      },
+    responses: {
+      create,
     },
   };
   return jest.fn(() => mOpenAI);
@@ -17,7 +22,7 @@ describe('queryOpenAI', () => {
   let req: Partial<Request>;
   let res: Partial<Response>;
   let next: NextFunction;
-  let mockOpenAI: jest.Mocked<Partial<OpenAI>>;
+  let mockOpenAI: MockOpenAI;
 
   beforeEach(() => {
     req = {};
@@ -25,7 +30,8 @@ describe('queryOpenAI', () => {
       locals: {},
     };
     next = jest.fn();
-    mockOpenAI = new OpenAI();
+    mockOpenAI = new OpenAI() as unknown as MockOpenAI;
+    mockOpenAI.responses.create.mockReset();
     jest.clearAllMocks();
   });
 
@@ -41,8 +47,8 @@ describe('queryOpenAI', () => {
 
   it('should return an error if OpenAI does not return a completion', async () => {
     res.locals!.naturalLanguageQuery = '???';
-    (mockOpenAI.chat?.completions.create as jest.Mock).mockResolvedValue({
-      choices: [{ message: { content: '' } }],
+    (mockOpenAI.responses.create as jest.Mock).mockResolvedValue({
+      id: 'resp_123', output_text: '', output: [],
     });
 
     await queryOpenAI(req as Request, res as Response, next);
@@ -58,13 +64,18 @@ describe('queryOpenAI', () => {
 
   it('should set res.locals.databaseQuery if OpenAI returns a valid completion', async () => {
     res.locals!.naturalLanguageQuery = 'Name the person with white eyes';
-    (mockOpenAI.chat?.completions.create as jest.Mock).mockResolvedValue({
-      choices: [
+    const sql = "SELECT name FROM public.people WHERE eye_color = 'white';";
+    mockOpenAI.responses.create.mockResolvedValue({
+      id: 'resp_456',
+      output_text: `\`\`\`sql\n${sql}\n\`\`\``,
+      // Structured shape for Responses API; your middleware may read this instead
+      output: [
         {
-          message: {
-            content:
-              "```sql\nSELECT name FROM public.people WHERE eye_color = 'white';\n```",
-          },
+          type: 'message',
+          role: 'assistant',
+          content: [
+            { type: 'output_text', text: sql },
+          ],
         },
       ],
     });
@@ -72,9 +83,7 @@ describe('queryOpenAI', () => {
     await queryOpenAI(req as Request, res as Response, next);
 
     expect(res.locals!.databaseQuery).toEqual(
-      expect.stringContaining(
-        "SELECT name FROM public.people WHERE eye_color = 'white';"
-      )
+      expect.stringContaining(sql)
     );
 
     expect(next).toHaveBeenCalled();
@@ -82,7 +91,8 @@ describe('queryOpenAI', () => {
 
   it('should return an error if OpenAI throws an error', async () => {
     res.locals!.naturalLanguageQuery = 'Name the person with white eyes';
-    (mockOpenAI.chat?.completions.create as jest.Mock).mockRejectedValue(
+
+    (mockOpenAI.responses.create as jest.Mock).mockRejectedValue(
       new Error('OpenAI error')
     );
 
