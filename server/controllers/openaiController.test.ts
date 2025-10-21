@@ -2,7 +2,14 @@ import { queryOpenAI } from './openaiController';
 import { Request, Response, NextFunction } from 'express';
 import OpenAI from 'openai';
 
+type MockOpenAI = {
+  responses: {
+    create: jest.Mock;
+  };
+};
+
 jest.mock('openai', () => {
+  const create = jest.fn();
   const mOpenAI = {
     responses: {
       create: jest.fn(),
@@ -21,7 +28,8 @@ describe('queryOpenAI (Responses API)', () => {
     req = {};
     res = { locals: {} };
     next = jest.fn();
-    mockOpenAI = new OpenAI();
+    mockOpenAI = new OpenAI() as unknown as MockOpenAI;
+    mockOpenAI.responses.create.mockReset();
     jest.clearAllMocks();
   });
 
@@ -62,9 +70,7 @@ describe('queryOpenAI (Responses API)', () => {
     await queryOpenAI(req as Request, res as Response, next);
 
     expect(res.locals!.databaseQuery).toEqual(
-      expect.stringContaining(
-        "SELECT name FROM public.people WHERE eye_color = 'white';"
-      )
+      expect.stringContaining(sql)
     );
     expect(next).toHaveBeenCalled();
   });
