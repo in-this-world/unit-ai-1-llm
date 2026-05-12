@@ -13,29 +13,42 @@ You will be building an internal dashboard to query a SQL database using natural
 
 ## Getting started
 
-- [ ] Fork and clone this repository. If you need a refresher, just follow the instructions found [here](https://github.com/CodesmithLLC/dev-environment-setup/blob/main/fork-clone.md)!
+- [] Fork and clone this repository. If you need a refresher, just follow the instructions found [here](https://github.com/CodesmithLLC/dev-environment-setup/blob/main/fork-clone.md)!
 
-- [ ] Ensure you're using Node.js 20 LTS or later (required for the OpenAI Responses API). Check your version with `node --version`
+- [] Ensure you're using Node.js 20 LTS or later (required for the OpenAI Responses API). Check your version with `node --version`
 
-- [ ] Run `npm install` to install any dependencies
+- [] Run `npm install` to install any dependencies
 
 ## Challenges
 
-### Database setup
+### Setup
 
 - Verify that you can run the psql command: `psql --version`. If not:
   - Make sure postgresql is properly installed (`brew install postgresql` for Mac or [instructions here](https://learn.microsoft.com/en-us/windows/wsl/tutorials/wsl-database#install-postgresql) for WSL).
   - Add `psql` to your PATH (if necessary): Add the line `export PATH=$PATH:/Library/PostgreSQL/latest/bin` to your `~/.bashrc` or `~/.bash_profile`, respectively, and restart your terminal. The exact path may vary so be sure to confirm the location of the postgresql binaries.
-- Create a new [Supabase](https://supabase.com/) project, set a password without special characters, and store the connection string in a `.env` file. Make sure to update [YOUR PASSWORD] to be the password you set.
+- Create a new [Supabase](https://supabase.com/) project and set a password without special characters. Once created, click the connect button, select "direct" for the connection type, choose the **Session pooler** option, then copy the "shared pooler" connection string. Store the connection string in a `.env` file. Make sure to update [YOUR PASSWORD] in the copied string to be the password you set.
 - Seed your DB: `psql -d <Supabase connection string> -f starwars_postgres_create.sql`.
 
-### App setup
-
-- Create an OpenAI API key for this project (you will need to provide a credit card to make an account, but this unit should cost less than $1).
+- Create an OpenAI API key for this project (you will need to provide a credit card to make an account, but the cost for this unit should be no more than $5).
 - Store your `OPENAI_API_KEY` (along with your SUPABASE_URI) in your `.env` file
-- **TDD will be extremely beneficial**, especially as you get to the prompting portion! The less familiar you are with a given technology / challenge, the more helpful TDD can be. ✅
-- Integrate your DB using the `pg` package: `import { Pool } from 'pg'`. You **must** use a `Pool` (not just `Client`) with Supabase's **Session pooler** (included in free accounts). Get your connection string from your Supabase dashboard's "Connect" button and select "Session pooler". You can create the `Pool` directly in the controller.
-- Integrate `gpt-4o` using OpenAI's **Responses API** (introduced in 2025). This replaces the older Completions API and supports built-in structured outputs, tool calling, and streaming responses. The Responses API is also much faster and cheaper to run. See the [Responses API documentation](https://platform.openai.com/docs/api-reference/responses) for implementation details.
+
+### Important Tips
+
+  *Note* This README will be intentionally less in-depth than previous Codesmith Unit Challenges. The goal is for you to further practice onboarding into an unfamiliar Codebase to improve your investigative abilities and autonomy as an engineer. How can you click around, technically communicate, and think critically with your partner to unpack what's already there, and what's left to do? That said, this section includes a few important hints and tips to help point you in the right direction.
+
+- **The general workflow** for this challenge will be as follows:
+
+  - Take the user's input
+  - Combine it with a system prompt (which you will create) and send it to the OpenAI API
+  - OpenAI returns an SQL query (hopefully) based on the question, and your system prompt
+  - Send the SQL query to the database
+  - Send the results back to the client
+
+- **TDD will be extremely beneficial**, especially as you get to the prompting portion! The less familiar you are with a given technology / challenge, the more helpful TDD can be. If you’re not sure where to begin with your controllers, or what each controller should handle, take a look at the test files. They can help guide you toward what each controller is responsible for and where to start implementing your logic. To run the full test suite, use `npm test`.
+
+- **To Integrate your Database** You will need to `import pkg from 'pg'`, then . You **must** use a `Pool` (not just `Client`) with Supabase's **Session pooler**. As mentioned above, You will will get your connection string by clicking your Supabase dashboard's "Connect" button and selecting "Session pooler". You can then create the `Pool` directly in the controller.
+
+- **To Integrate OpenAI** You will be using `gpt-5.5` with OpenAI's **Responses API** (introduced in 2025). This replaces the older Completions API and supports built-in structured outputs, tool calling, and streaming responses. The Responses API is also much faster and cheaper to run. See the [Responses API documentation](https://developers.openai.com/api/docs/guides/migrate-to-responses) for implementation details.
 
 ### Prompt evaluation
 
