@@ -13,29 +13,44 @@ You will be building an internal dashboard to query a SQL database using natural
 
 ## Getting started
 
-- [ ] Fork and clone this repository. If you need a refresher, just follow the instructions found [here](https://github.com/CodesmithLLC/dev-environment-setup/blob/main/fork-clone.md)!
+- [] Fork and clone this repository. If you need a refresher, just follow the instructions found [here](https://github.com/CodesmithLLC/dev-environment-setup/blob/main/fork-clone.md)!
 
-- [ ] Ensure you're using Node.js 20 LTS or later (required for the OpenAI Responses API). Check your version with `node --version`
+- [] Ensure you're using Node.js 20 LTS or later (required for the OpenAI Responses API). Check your version with `node --version`
 
-- [ ] Run `npm install` to install any dependencies
+- [] Run `npm install` to install any dependencies
 
 ## Challenges
 
-### Database setup
+### Setup
 
 - Verify that you can run the psql command: `psql --version`. If not:
   - Make sure postgresql is properly installed (`brew install postgresql` for Mac or [instructions here](https://learn.microsoft.com/en-us/windows/wsl/tutorials/wsl-database#install-postgresql) for WSL).
   - Add `psql` to your PATH (if necessary): Add the line `export PATH=$PATH:/Library/PostgreSQL/latest/bin` to your `~/.bashrc` or `~/.bash_profile`, respectively, and restart your terminal. The exact path may vary so be sure to confirm the location of the postgresql binaries.
-- Create a new [Supabase](https://supabase.com/) project, set a password without special characters, and store the connection string in a `.env` file. Make sure to update [YOUR PASSWORD] to be the password you set.
+- Create a new [Supabase](https://supabase.com/) project and set a password without special characters. Once created, click the connect button, select "direct" for the connection type, choose the **Session pooler** option, then copy the "shared pooler" connection string. Store the connection string in a `.env` file. Make sure to update [YOUR PASSWORD] in the copied string to be the password you set.
 - Seed your DB: `psql -d <Supabase connection string> -f starwars_postgres_create.sql`.
 
-### App setup
-
-- Create an OpenAI API key for this project (you will need to provide a credit card to make an account, but this unit should cost less than $1).
+- Create an OpenAI API key for this project (you will need to provide a credit card to make an account, but the cost for this unit should be no more than $5).
 - Store your `OPENAI_API_KEY` (along with your SUPABASE_URI) in your `.env` file
-- **TDD will be extremely beneficial**, especially as you get to the prompting portion! The less familiar you are with a given technology / challenge, the more helpful TDD can be. ✅
-- Integrate your DB using the `pg` package: `import { Pool } from 'pg'`. You **must** use a `Pool` (not just `Client`) with Supabase's **Session pooler** (included in free accounts). Get your connection string from your Supabase dashboard's "Connect" button and select "Session pooler". You can create the `Pool` directly in the controller.
-- Integrate `gpt-4o` using OpenAI's **Responses API** (introduced in 2025). This replaces the older Completions API and supports built-in structured outputs, tool calling, and streaming responses. The Responses API is also much faster and cheaper to run. See the [Responses API documentation](https://platform.openai.com/docs/api-reference/responses) for implementation details.
+
+### Important Tips
+
+  *Note* This README will be intentionally less in-depth than previous Codesmith Unit Challenges. The goal is for you to further practice onboarding into an unfamiliar Codebase to improve your investigative abilities and autonomy as an engineer. How can you click around, technically communicate, and think critically with your partner to unpack what's already there, and what's left to do? That said, this section includes a few important hints and tips to help point you in the right direction.
+
+- **The general workflow** for this challenge will be as follows:
+
+  - Take the user's input
+  - Combine it with a system prompt (which you will create) and send it to the OpenAI API
+  - OpenAI returns an SQL query (hopefully) based on the question, and your system prompt
+  - Send the SQL query to the database
+  - Send the results back to the client
+
+  *Note* In this challenge, it may prove helpful to avoid hardcoding your system prompt directly in your controller. Instead, store it in a dedicated prompt file, then import it into the necessary controller files. This keeps your prompt readable, makes edits straightforward without touching controller logic, and gives you clean git diffs when prompt content changes.
+
+- **TDD will be extremely beneficial**, especially as you get to the prompting portion! The less familiar you are with a given technology / challenge, the more helpful TDD can be. If you’re not sure where to begin with your controllers, or what each controller should handle, take a look at the test files. They can help guide you toward what each controller is responsible for and where to start implementing your logic. To run the full test suite, use `npm test`.
+
+- **To Integrate your Database** you **must** use a `Pool` (not just `Client`) with Supabase's **Session pooler**. As mentioned above, You will get your connection string by clicking your Supabase dashboard's "Connect" button and selecting "Session pooler". You can then create the `Pool` directly in the controller. You will need to `import pkg from 'pg'`, then `const { Pool } = pkg` to avoid a commonJS/ESM error when importing. See the [node-postgres Pooling documentation](https://node-postgres.com/features/pooling#single-query) for instructions on querying. 
+
+- **To Integrate OpenAI** you will be using `gpt-5.5` with OpenAI's **Responses API** (introduced in 2025). This replaces the older Completions API and supports built-in structured outputs, tool calling, and streaming responses. The Responses API is also much faster and cheaper to run. See the [Responses API documentation](https://developers.openai.com/api/docs/guides/migrate-to-responses) for implementation details.
 
 ### Prompt evaluation
 
@@ -52,7 +67,9 @@ Some options to consider:
 
 ### Prompt iteration
 
-It’s a bit haphazard to just keep changing the prompt and hoping for the best. How can you be more methodical? How can you track your progress? What if a prompt works for one question but not another? Can you build a simple logging service (as middleware) that stores your prompt + input + output + any other relevant info?
+It’s a bit haphazard to just keep changing the prompt and hoping for the best. How can you be more methodical? How can you track your progress? What if a prompt works for one question but not another? Can you build a simple logging service (as middleware) that stores your prompt + input + output + any other relevant info? 
+
+*Hint* Consider writing to a separate `.json` or `.log` file to keep track of these logs. 
 
 Keep in mind the following goals:
 
@@ -79,7 +96,7 @@ Fill in relevant context from previous answers as needed!
 
 **Use strategies from the prompting lecture!**
 
-And look at the [OpenAI Responses API documentation](https://platform.openai.com/docs/api-reference/responses). Besides modifying your prompt itself, experiment with request properties like `temperature` (or `top_p`), `max_output_tokens`, `seed`, `response_format`, and `stream`. These control randomness, cost, reproducibility, and structure. The Responses API also supports **built-in tools** and **structured outputs**, which are perfect for enforcing a consistent SQL format or returning valid JSON objects. Review a few example requests in the documentation to see how to combine these properties effectively.
+And look at the [OpenAI Responses API documentation](https://developers.openai.com/api/docs/guides/migrate-to-responses). Besides modifying your prompt itself, experiment with request properties like `temperature` (or `top_p`), `max_output_tokens`, `seed`, `response_format`, and `stream`. These control randomness, cost, reproducibility, and structure. The Responses API also supports **built-in tools** and **structured outputs**, which are perfect for enforcing a consistent SQL format or returning valid JSON objects. Review a few example requests in the documentation to see how to combine these properties effectively.
 
 ### Build your golden (ground truth) dataset
 
@@ -108,7 +125,7 @@ Now that you’ve built a functional prototype and have adequate testing in plac
 ### How can you reduce costs?
 
 - Can you use fewer tokens?
-- Consider that `gpt-4o-mini` is significantly cheaper than `gpt-4o`! Switch to `gpt-4o-mini` and use your excellent testing setup to ensure your prompt still works well enough.
+- Consider that `gpt-5.4-mini` is significantly cheaper than `gpt-5.5`! Switch to `gpt-5.4-mini` and use your excellent testing setup to ensure your prompt still works well enough.
 - The Responses API lets you set `max_output_tokens` and reuse prompt caching features to save both cost and latency. Caching is free for repeated prompts and automatically reuses the embedding of identical input. (`max_output_tokens` limits how many tokens the model can return; both input and output tokens count toward cost).
 
 ### How can you reduce latency?
