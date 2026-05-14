@@ -46,7 +46,7 @@ You will be building an internal dashboard to query a SQL database using natural
 
 - **TDD will be extremely beneficial**, especially as you get to the prompting portion! The less familiar you are with a given technology / challenge, the more helpful TDD can be. If you’re not sure where to begin with your controllers, or what each controller should handle, take a look at the test files. They can help guide you toward what each controller is responsible for and where to start implementing your logic. To run the full test suite, use `npm test`.
 
-- **To Integrate your Database** You **must** use a `Pool` (not just `Client`) with Supabase's **Session pooler**. As mentioned above, You will will get your connection string by clicking your Supabase dashboard's "Connect" button and selecting "Session pooler". You can then create the `Pool` directly in the controller. You will need to `import pkg from 'pg'`, then `const { Pool } = pkg` to avoid a commonJS/ESM error when importing. See the [node-postgres Pooling documentation](https://node-postgres.com/features/pooling#single-query) for instructions on querying. 
+- **To Integrate your Database** You **must** use a `Pool` (not just `Client`) with Supabase's **Session pooler**. As mentioned above, You will get your connection string by clicking your Supabase dashboard's "Connect" button and selecting "Session pooler". You can then create the `Pool` directly in the controller. You will need to `import pkg from 'pg'`, then `const { Pool } = pkg` to avoid a commonJS/ESM error when importing. See the [node-postgres Pooling documentation](https://node-postgres.com/features/pooling#single-query) for instructions on querying. 
 
 - **To Integrate OpenAI** You will be using `gpt-5.5` with OpenAI's **Responses API** (introduced in 2025). This replaces the older Completions API and supports built-in structured outputs, tool calling, and streaming responses. The Responses API is also much faster and cheaper to run. See the [Responses API documentation](https://developers.openai.com/api/docs/guides/migrate-to-responses) for implementation details.
 
@@ -121,7 +121,7 @@ Now that you’ve built a functional prototype and have adequate testing in plac
 ### How can you reduce costs?
 
 - Can you use fewer tokens?
-- Consider that `gpt-4o-mini` is significantly cheaper than `gpt-4o`! Switch to `gpt-4o-mini` and use your excellent testing setup to ensure your prompt still works well enough.
+- Consider that `gpt-5.4-mini` is significantly cheaper than `gpt-5.5`! Switch to `gpt-5.4-mini` and use your excellent testing setup to ensure your prompt still works well enough.
 - The Responses API lets you set `max_output_tokens` and reuse prompt caching features to save both cost and latency. Caching is free for repeated prompts and automatically reuses the embedding of identical input. (`max_output_tokens` limits how many tokens the model can return; both input and output tokens count toward cost).
 
 ### How can you reduce latency?
