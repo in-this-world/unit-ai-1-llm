@@ -50,7 +50,7 @@ You will be building an internal dashboard to query a SQL database using natural
 
 - **To Integrate your Database** you **must** use a `Pool` (not just `Client`) with Supabase's **Session pooler**. As mentioned above, You will get your connection string by clicking your Supabase dashboard's "Connect" button and selecting "Session pooler". You can then create the `Pool` directly in the controller. You will need to `import pkg from 'pg'`, then `const { Pool } = pkg` to avoid a commonJS/ESM error when importing. See the [node-postgres Pooling documentation](https://node-postgres.com/features/pooling#single-query) for instructions on querying. 
 
-- **To Integrate OpenAI** You will be using `gpt-5.5` with OpenAI's **Responses API** (introduced in 2025). This replaces the older Completions API and supports built-in structured outputs, tool calling, and streaming responses. The Responses API is also much faster and cheaper to run. See the [Responses API documentation](https://developers.openai.com/api/docs/guides/migrate-to-responses) for implementation details.
+- **To Integrate OpenAI** you will be using `gpt-5.5` with OpenAI's **Responses API** (introduced in 2025). This replaces the older Completions API and supports built-in structured outputs, tool calling, and streaming responses. The Responses API is also much faster and cheaper to run. See the [Responses API documentation](https://developers.openai.com/api/docs/guides/migrate-to-responses) for implementation details.
 
 ### Prompt evaluation
 
