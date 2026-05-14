@@ -44,6 +44,8 @@ You will be building an internal dashboard to query a SQL database using natural
   - Send the SQL query to the database
   - Send the results back to the client
 
+  *Note* In this challenge, it may prove helpful to avoid hardcoding your system prompt directly in your controller. Instead, store it in a dedicated prompt file, then import it into the necessary controller files. This keeps your prompt readable, makes edits straightforward without touching controller logic, and gives you clean git diffs when prompt content changes.
+
 - **TDD will be extremely beneficial**, especially as you get to the prompting portion! The less familiar you are with a given technology / challenge, the more helpful TDD can be. If you’re not sure where to begin with your controllers, or what each controller should handle, take a look at the test files. They can help guide you toward what each controller is responsible for and where to start implementing your logic. To run the full test suite, use `npm test`.
 
 - **To Integrate your Database** You **must** use a `Pool` (not just `Client`) with Supabase's **Session pooler**. As mentioned above, You will get your connection string by clicking your Supabase dashboard's "Connect" button and selecting "Session pooler". You can then create the `Pool` directly in the controller. You will need to `import pkg from 'pg'`, then `const { Pool } = pkg` to avoid a commonJS/ESM error when importing. See the [node-postgres Pooling documentation](https://node-postgres.com/features/pooling#single-query) for instructions on querying. 
@@ -65,7 +67,9 @@ Some options to consider:
 
 ### Prompt iteration
 
-It’s a bit haphazard to just keep changing the prompt and hoping for the best. How can you be more methodical? How can you track your progress? What if a prompt works for one question but not another? Can you build a simple logging service (as middleware) that stores your prompt + input + output + any other relevant info?
+It’s a bit haphazard to just keep changing the prompt and hoping for the best. How can you be more methodical? How can you track your progress? What if a prompt works for one question but not another? Can you build a simple logging service (as middleware) that stores your prompt + input + output + any other relevant info? 
+
+*Hint* Consider writing to a separate `.json` or `.log` file to keep track of these logs. 
 
 Keep in mind the following goals:
 
@@ -92,7 +96,7 @@ Fill in relevant context from previous answers as needed!
 
 **Use strategies from the prompting lecture!**
 
-And look at the [OpenAI Responses API documentation](https://platform.openai.com/docs/api-reference/responses). Besides modifying your prompt itself, experiment with request properties like `temperature` (or `top_p`), `max_output_tokens`, `seed`, `response_format`, and `stream`. These control randomness, cost, reproducibility, and structure. The Responses API also supports **built-in tools** and **structured outputs**, which are perfect for enforcing a consistent SQL format or returning valid JSON objects. Review a few example requests in the documentation to see how to combine these properties effectively.
+And look at the [OpenAI Responses API documentation](https://developers.openai.com/api/docs/guides/migrate-to-responses). Besides modifying your prompt itself, experiment with request properties like `temperature` (or `top_p`), `max_output_tokens`, `seed`, `response_format`, and `stream`. These control randomness, cost, reproducibility, and structure. The Responses API also supports **built-in tools** and **structured outputs**, which are perfect for enforcing a consistent SQL format or returning valid JSON objects. Review a few example requests in the documentation to see how to combine these properties effectively.
 
 ### Build your golden (ground truth) dataset
 
