@@ -1,5 +1,12 @@
 import { RequestHandler } from 'express';
+import pg from 'pg';
 import { ServerError } from '../types';
+
+const { Pool } = pg;
+
+const pool = new Pool({
+  connectionString: process.env.SUPABASE_URI,
+});
 
 export const queryStarWarsDatabase: RequestHandler = async (
   _req,
@@ -16,9 +23,26 @@ export const queryStarWarsDatabase: RequestHandler = async (
     return next(error);
   }
 
-  // TODO: Add your code here to execute the SQL query against your Supabase database
-  // Use the databaseQuery from res.locals to query the database
-  // Store the results in res.locals.databaseQueryResult
-  res.locals.databaseQueryResult = [{ name: 'Sly Moore' }]
-  return next();
+  // Validate that the query is a SELECT statement
+  if (!/^\s*select/i.test(databaseQuery)) {
+    const error: ServerError = {
+      log: 'Database query middleware received a non-SELECT query',
+      status: 500,
+      message: { err: 'An error occurred before querying the database' },
+    };
+    return next(error);
+  }
+
+  try {
+    const result = await pool.query(databaseQuery);
+    res.locals.databaseQueryResult = result.rows;
+    return next();
+  } catch (err) {
+    const error: ServerError = {
+      log: `Database query error: ${err instanceof Error ? err.message : String(err)}`,
+      status: 500,
+      message: { err: 'An error occurred while querying database' },
+    };
+    return next(error);
+  }
 };

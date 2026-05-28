@@ -62,9 +62,10 @@ describe('queryOpenAI (Responses API)', () => {
 
   it('should set res.locals.databaseQuery when OpenAI returns a valid response', async () => {
     res.locals!.naturalLanguageQuery = 'Name the person with white eyes';
+    const sql = "SELECT name FROM public.people WHERE eye_color = 'white';";
     (mockOpenAI.responses.create as jest.Mock).mockResolvedValue({
       output_text:
-        "```sql\nSELECT name FROM public.people WHERE eye_color = 'white';\n```",
+        `\`\`\`sql\n${sql}\n\`\`\``,
     });
 
     await queryOpenAI(req as Request, res as Response, next);

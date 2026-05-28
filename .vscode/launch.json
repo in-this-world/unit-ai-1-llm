@@ -1,0 +1,27 @@
+{
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "type": "node",
+      "request": "launch",
+      "name": "🚀 Debug Server (Launch)",
+      "skipFiles": ["<node_internals>/**"],
+      "runtimeArgs": [
+        "--no-warnings=ExperimentalWarning",
+        "--loader",
+        "ts-node/esm"
+      ],
+      "program": "${workspaceFolder}/server/server.ts",
+      "console": "integratedTerminal",
+      "restart": true
+    },
+    {
+      "type": "node",
+      "request": "attach",
+      "name": "🔌 Attach to Server (Port 9229)",
+      "port": 9229,
+      "skipFiles": ["<node_internals>/**"],
+      "restart": true
+    }
+  ]
+}
