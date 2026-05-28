@@ -17,3 +17,6 @@ dist/
 
 # jest coverage
 coverage/
+
+# editor settings
+.vscode/
