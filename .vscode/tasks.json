@@ -1,0 +1,32 @@
+{
+    "version": "2.0.0",
+    "tasks": [
+        {
+            "label": "start:client",
+            "type": "shell",
+            "command": "npm run start:client",
+            "isBackground": true,
+            "problemMatcher": [
+                {
+                    "pattern": [
+                        {
+                            "regexp": "."
+                        }
+                    ],
+                    "background": {
+                        "activeOnStart": true,
+                        "beginsPattern": ".",
+                        "endsPattern": "compiled successfully"
+                    }
+                }
+            ]
+        },
+        {
+            "label": "start:server",
+            "type": "shell",
+            "command": "npm run start:server",
+            "isBackground": true,
+            "problemMatcher": []
+        }
+    ]
+}
