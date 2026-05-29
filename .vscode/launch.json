@@ -22,6 +22,22 @@
       "port": 9229,
       "skipFiles": ["<node_internals>/**"],
       "restart": true
+    },
+    {
+      "type": "pwa-chrome",
+      "request": "launch",
+      "name": "🌐 Debug Client (Chrome)",
+      "url": "http://localhost:8080",
+      "webRoot": "${workspaceFolder}/client",
+      "sourceMaps": true,
+      "skipFiles": ["<node_internals>/**"]
+    }
+  ],
+  "compounds": [
+    {
+      "name": "🧩 Debug Full Stack",
+      "preLaunchTask": "start:client",
+      "configurations": ["🚀 Debug Server (Launch)", "🌐 Debug Client (Chrome)"]
     }
   ]
 }
