@@ -19,4 +19,4 @@ dist/
 coverage/
 
 # editor settings
-.vscode/
+# .vscode/ # Uncomment if you want to ignore VSCode settings
