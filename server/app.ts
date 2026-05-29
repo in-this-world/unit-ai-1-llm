@@ -22,6 +22,8 @@ app.post(
     res.status(200).json({
       databaseQuery: res.locals.databaseQuery,
       databaseQueryResult: res.locals.databaseQueryResult,
+      iterationLogs: res.locals.iterationLogs,
+      executionSkipped: res.locals.shouldExecuteQuery === false,
     });
   }
 );

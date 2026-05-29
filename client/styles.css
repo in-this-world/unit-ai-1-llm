@@ -165,6 +165,31 @@ td {
   border: 1px solid #1f2c3e;
 }
 
+.iteration-control-container {
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+  gap: 15px;
+  background-color: #121826;
+  padding: 10px 15px;
+  border-radius: 5px;
+  border: 1px solid #1f2c3e;
+}
+
+.iteration-input {
+  width: 90px;
+  background-color: #0c1017;
+  color: #c7d4ed;
+  border: 1px solid #243b5e;
+  padding: 8px 12px;
+  border-radius: 4px;
+  outline: none;
+}
+
+.iteration-input:focus {
+  border-color: #63a4ff;
+}
+
 .selector-label {
   font-weight: bold;
   color: #63a4ff;
@@ -257,3 +282,26 @@ td {
   font-style: italic;
 }
 
+.warning-text {
+  color: #ffd166;
+  text-align: left;
+}
+
+.iteration-logs {
+  margin-top: 12px;
+  display: grid;
+  gap: 12px;
+}
+
+.iteration-log-card {
+  border: 1px solid #1f2c3e;
+  border-radius: 4px;
+  padding: 12px;
+  background-color: #0d141d;
+}
+
+.iteration-log-card h3 {
+  text-align: left;
+  margin-bottom: 8px;
+  color: #d3e7ff;
+}

@@ -13,6 +13,11 @@ export const queryStarWarsDatabase: RequestHandler = async (
   res,
   next
 ) => {
+  if (res.locals.shouldExecuteQuery === false) {
+    res.locals.databaseQueryResult = [];
+    return next();
+  }
+
   const { databaseQuery } = res.locals;
   if (!databaseQuery) {
     const error: ServerError = {

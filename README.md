@@ -13,11 +13,11 @@ You will be building an internal dashboard to query a SQL database using natural
 
 ## Getting started
 
-- [] Fork and clone this repository. If you need a refresher, just follow the instructions found [here](https://github.com/CodesmithLLC/dev-environment-setup/blob/main/fork-clone.md)!
+- [ ] Fork and clone this repository. If you need a refresher, follow the [fork and clone setup guide](https://github.com/CodesmithLLC/dev-environment-setup/blob/main/fork-clone.md)!
 
-- [] Ensure you're using Node.js 20 LTS or later (required for the OpenAI Responses API). Check your version with `node --version`
+- [ ] Ensure you're using Node.js 20 LTS or later (required for the OpenAI Responses API). Check your version with `node --version`
 
-- [] Run `npm install` to install any dependencies
+- [ ] Run `npm install` to install any dependencies
 
 ## Challenges
 
@@ -34,7 +34,7 @@ You will be building an internal dashboard to query a SQL database using natural
 
 ### Important Tips
 
-  *Note* This README will be intentionally less in-depth than previous Codesmith Unit Challenges. The goal is for you to further practice onboarding into an unfamiliar Codebase to improve your investigative abilities and autonomy as an engineer. How can you click around, technically communicate, and think critically with your partner to unpack what's already there, and what's left to do? That said, this section includes a few important hints and tips to help point you in the right direction.
+_Note_ This README will be intentionally less in-depth than previous Codesmith Unit Challenges. The goal is for you to further practice onboarding into an unfamiliar Codebase to improve your investigative abilities and autonomy as an engineer. How can you click around, technically communicate, and think critically with your partner to unpack what's already there, and what's left to do? That said, this section includes a few important hints and tips to help point you in the right direction.
 
 - **The general workflow** for this challenge will be as follows:
 
@@ -44,11 +44,11 @@ You will be building an internal dashboard to query a SQL database using natural
   - Send the SQL query to the database
   - Send the results back to the client
 
-  *Note* In this challenge, it may prove helpful to avoid hardcoding your system prompt directly in your controller. Instead, store it in a dedicated prompt file, then import it into the necessary controller files. This keeps your prompt readable, makes edits straightforward without touching controller logic, and gives you clean git diffs when prompt content changes.
+  _Note_ In this challenge, it may prove helpful to avoid hardcoding your system prompt directly in your controller. Instead, store it in a dedicated prompt file, then import it into the necessary controller files. This keeps your prompt readable, makes edits straightforward without touching controller logic, and gives you clean git diffs when prompt content changes.
 
 - **TDD will be extremely beneficial**, especially as you get to the prompting portion! The less familiar you are with a given technology / challenge, the more helpful TDD can be. If you’re not sure where to begin with your controllers, or what each controller should handle, take a look at the test files. They can help guide you toward what each controller is responsible for and where to start implementing your logic. To run the full test suite, use `npm test`.
 
-- **To Integrate your Database** you **must** use a `Pool` (not just `Client`) with Supabase's **Session pooler**. As mentioned above, You will get your connection string by clicking your Supabase dashboard's "Connect" button and selecting "Session pooler". You can then create the `Pool` directly in the controller. You will need to `import pkg from 'pg'`, then `const { Pool } = pkg` to avoid a commonJS/ESM error when importing. See the [node-postgres Pooling documentation](https://node-postgres.com/features/pooling#single-query) for instructions on querying. 
+- **To Integrate your Database** you **must** use a `Pool` (not just `Client`) with Supabase's **Session pooler**. As mentioned above, You will get your connection string by clicking your Supabase dashboard's "Connect" button and selecting "Session pooler". You can then create the `Pool` directly in the controller. You will need to `import pkg from 'pg'`, then `const { Pool } = pkg` to avoid a commonJS/ESM error when importing. See the [node-postgres Pooling documentation](https://node-postgres.com/features/pooling#single-query) for instructions on querying.
 
 - **To Integrate OpenAI** you will be using `gpt-5.5` with OpenAI's **Responses API** (introduced in 2025). This replaces the older Completions API and supports built-in structured outputs, tool calling, and streaming responses. The Responses API is also much faster and cheaper to run. See the [Responses API documentation](https://developers.openai.com/api/docs/guides/migrate-to-responses) for implementation details.
 
@@ -67,9 +67,9 @@ Some options to consider:
 
 ### Prompt iteration
 
-It’s a bit haphazard to just keep changing the prompt and hoping for the best. How can you be more methodical? How can you track your progress? What if a prompt works for one question but not another? Can you build a simple logging service (as middleware) that stores your prompt + input + output + any other relevant info? 
+It’s a bit haphazard to just keep changing the prompt and hoping for the best. How can you be more methodical? How can you track your progress? What if a prompt works for one question but not another? Can you build a simple logging service (as middleware) that stores your prompt + input + output + any other relevant info?
 
-*Hint* Consider writing to a separate `.json` or `.log` file to keep track of these logs. 
+_Hint_ Consider writing to a separate `.json` or `.log` file to keep track of these logs.
 
 Keep in mind the following goals:
 
@@ -83,7 +83,7 @@ Keep in mind the following goals:
 - Alignment (not harmful, toxic, biased, dishonest, unreliable)
 - Robustness (resist adversarial manipulation)
 
-### A functional prototype!
+### A functional prototype
 
 You will have achieved sufficient functionality when you can successfully complete [Hunting the Hunter: A Star Wars Adventure](https://hunting-the-hunter.codesmith.deno.net/) using your dashboard. You should enter information given in the challenge into the dashboard form – for example:
 

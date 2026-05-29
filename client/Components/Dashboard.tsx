@@ -5,16 +5,29 @@ type ResultRow = Record<string, string | number>;
 interface ParsedConverterResponse {
   databaseQuery: string;
   databaseQueryResult: ResultRow[];
+  executionSkipped?: boolean;
+  iterationLogs?: {
+    requestId: string;
+    logDirectory: string;
+    entries: { iteration: number; fileName: string; sql: string }[];
+  };
   rawLLMResponse?: string;
 }
 
 const Dashboard = () => {
   const [naturalLanguageQuery, setNaturalLanguageQuery] = useState('');
   const [promptType, setPromptType] = useState('standard');
+  const [iterationCount, setIterationCount] = useState(1);
   const [databaseQuery, setDatabaseQuery] = useState('');
   const [databaseQueryResults, setDatabaseQueryResults] = useState<ResultRow[]>(
     []
   );
+  const [executionSkipped, setExecutionSkipped] = useState(false);
+  const [iterationLogs, setIterationLogs] = useState<{
+    requestId: string;
+    logDirectory: string;
+    entries: { iteration: number; fileName: string; sql: string }[];
+  } | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [outputFormat, setOutputFormat] = useState('table'); // 'table', 'csv', 'excel', 'html'
@@ -25,6 +38,8 @@ const Dashboard = () => {
     setError('');
     setDatabaseQuery('');
     setDatabaseQueryResults([]);
+    setExecutionSkipped(false);
+    setIterationLogs(null);
 
     try {
       const converterResponse = await fetch('/api', {
@@ -32,7 +47,11 @@ const Dashboard = () => {
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ naturalLanguageQuery, promptType }),
+        body: JSON.stringify({
+          naturalLanguageQuery,
+          promptType,
+          iterationCount,
+        }),
       });
 
       if (converterResponse.status !== 200) {
@@ -43,8 +62,15 @@ const Dashboard = () => {
           await converterResponse.json();
         setDatabaseQuery(parsedConverterResponse.databaseQuery);
         setDatabaseQueryResults(parsedConverterResponse.databaseQueryResult);
+        setExecutionSkipped(Boolean(parsedConverterResponse.executionSkipped));
+        if (parsedConverterResponse.iterationLogs) {
+          setIterationLogs(parsedConverterResponse.iterationLogs);
+        }
         if (parsedConverterResponse.rawLLMResponse) {
-          console.log('Full LLM Response:\n', parsedConverterResponse.rawLLMResponse);
+          console.log(
+            'Full LLM Response:\n',
+            parsedConverterResponse.rawLLMResponse
+          );
         }
       }
     } catch (_err) {
@@ -70,7 +96,8 @@ const Dashboard = () => {
   const getHTMLTableMarkup = () => {
     if (databaseQueryResults.length === 0) return '';
     const columns = Object.keys(databaseQueryResults[0]);
-    let html = '<table border="1" cellpadding="5" cellspacing="0">\n  <thead>\n    <tr>\n';
+    let html =
+      '<table border="1" cellpadding="5" cellspacing="0">\n  <thead>\n    <tr>\n';
     columns.forEach((col) => {
       html += `      <th>${col}</th>\n`;
     });
@@ -93,7 +120,11 @@ const Dashboard = () => {
   };
 
   // Utility to download text file
-  const handleDownloadFile = (content: string, fileName: string, mimeType: string) => {
+  const handleDownloadFile = (
+    content: string,
+    fileName: string,
+    mimeType: string
+  ) => {
     const blob = new Blob([content], { type: mimeType });
     const url = URL.createObjectURL(blob);
     const link = document.createElement('a');
@@ -140,8 +171,24 @@ const Dashboard = () => {
         return (
           <div className="format-preview">
             <div className="action-buttons">
-              <button type="button" onClick={() => handleCopyToClipboard(csvContent)}>📋 Copy CSV</button>
-              <button type="button" onClick={() => handleDownloadFile(csvContent, 'starwars_export.csv', 'text/csv;charset=utf-8;')}>💾 Download CSV</button>
+              <button
+                type="button"
+                onClick={() => handleCopyToClipboard(csvContent)}
+              >
+                📋 Copy CSV
+              </button>
+              <button
+                type="button"
+                onClick={() =>
+                  handleDownloadFile(
+                    csvContent,
+                    'starwars_export.csv',
+                    'text/csv;charset=utf-8;'
+                  )
+                }
+              >
+                💾 Download CSV
+              </button>
             </div>
             <pre>{csvContent}</pre>
           </div>
@@ -153,9 +200,23 @@ const Dashboard = () => {
         const excelContent = '\uFEFF' + csvContent;
         return (
           <div className="format-preview">
-            <p className="hint">Tip: Download this format to open directly in Microsoft Excel with perfect character encoding.</p>
+            <p className="hint">
+              Tip: Download this format to open directly in Microsoft Excel with
+              perfect character encoding.
+            </p>
             <div className="action-buttons">
-              <button type="button" onClick={() => handleDownloadFile(excelContent, 'starwars_excel_export.csv', 'text/csv;charset=utf-8;')}>💾 Download for Excel</button>
+              <button
+                type="button"
+                onClick={() =>
+                  handleDownloadFile(
+                    excelContent,
+                    'starwars_excel_export.csv',
+                    'text/csv;charset=utf-8;'
+                  )
+                }
+              >
+                💾 Download for Excel
+              </button>
             </div>
             <pre>{csvContent}</pre>
           </div>
@@ -166,7 +227,12 @@ const Dashboard = () => {
         return (
           <div className="format-preview">
             <div className="action-buttons">
-              <button type="button" onClick={() => handleCopyToClipboard(htmlMarkup)}>📋 Copy HTML</button>
+              <button
+                type="button"
+                onClick={() => handleCopyToClipboard(htmlMarkup)}
+              >
+                📋 Copy HTML
+              </button>
             </div>
             <pre>{htmlMarkup}</pre>
           </div>
@@ -181,7 +247,9 @@ const Dashboard = () => {
     <div className="container">
       <form onSubmit={handleSubmit}>
         <div className="prompt-selector-container">
-          <label htmlFor="prompt-select" className="selector-label">Prompting Style:</label>
+          <label htmlFor="prompt-select" className="selector-label">
+            Prompting Style:
+          </label>
           <select
             id="prompt-select"
             value={promptType}
@@ -191,6 +259,28 @@ const Dashboard = () => {
             <option value="standard">Standard System Prompt</option>
             <option value="react">ReAct (Reason + Act) Prompt</option>
           </select>
+        </div>
+
+        <div className="iteration-control-container">
+          <label htmlFor="iteration-count" className="selector-label">
+            Iteration Count:
+          </label>
+          <input
+            id="iteration-count"
+            type="number"
+            min={1}
+            max={10}
+            value={iterationCount}
+            onChange={(e) => {
+              const parsed = Number(e.target.value);
+              if (!Number.isNaN(parsed)) {
+                setIterationCount(
+                  Math.min(10, Math.max(1, Math.floor(parsed)))
+                );
+              }
+            }}
+            className="iteration-input"
+          />
         </div>
 
         <textarea
@@ -205,6 +295,27 @@ const Dashboard = () => {
       </form>
 
       {error && <p className="error">{error}</p>}
+
+      {executionSkipped && iterationLogs && (
+        <div className="result">
+          <h2>Execution Skipped:</h2>
+          <p className="warning-text">
+            SQL differed across iterations, so no query was executed. Review the
+            logs below.
+          </p>
+          <p className="hint">Log directory: {iterationLogs.logDirectory}</p>
+          <div className="iteration-logs">
+            {iterationLogs.entries.map((entry) => (
+              <div key={entry.fileName} className="iteration-log-card">
+                <h3>
+                  Iteration {entry.iteration} ({entry.fileName})
+                </h3>
+                <pre>{entry.sql}</pre>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
 
       {databaseQuery && (
         <div className="result">

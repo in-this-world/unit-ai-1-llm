@@ -10,11 +10,12 @@
     "target": "ES2017",
     "allowJs": true,
     "jsx": "react",
-    "skipLibCheck": true
+    "skipLibCheck": true,
+    "types": ["node", "jest"]
   },
   "ts-node": {
     "esm": true
   },
   "include": ["client/**/*", "server/**/*", "types/*.ts"],
-  "exclude": ["node_modules", "dist", "**/*.test.ts"]
+  "exclude": ["node_modules", "dist"]
 }
