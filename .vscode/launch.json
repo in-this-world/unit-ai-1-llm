@@ -5,7 +5,9 @@
       "type": "node",
       "request": "launch",
       "name": "🚀 Debug Server (Launch)",
-      "skipFiles": ["<node_internals>/**"],
+      "skipFiles": [
+        "<node_internals>/**"
+      ],
       "runtimeArgs": [
         "--no-warnings=ExperimentalWarning",
         "--loader",
@@ -20,7 +22,9 @@
       "request": "attach",
       "name": "🔌 Attach to Server (Port 9229)",
       "port": 9229,
-      "skipFiles": ["<node_internals>/**"],
+      "skipFiles": [
+        "<node_internals>/**"
+      ],
       "restart": true
     },
     {
@@ -30,14 +34,19 @@
       "url": "http://localhost:8080",
       "webRoot": "${workspaceFolder}/client",
       "sourceMaps": true,
-      "skipFiles": ["<node_internals>/**"]
+      "skipFiles": [
+        "<node_internals>/**"
+      ]
     }
   ],
   "compounds": [
     {
       "name": "🧩 Debug Full Stack",
       "preLaunchTask": "start:client",
-      "configurations": ["🚀 Debug Server (Launch)", "🌐 Debug Client (Chrome)"]
+      "configurations": [
+        "🚀 Debug Server (Launch)",
+        "🌐 Debug Client (Chrome)"
+      ]
     }
   ]
 }
