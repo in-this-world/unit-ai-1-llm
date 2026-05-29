@@ -1,11 +1,12 @@
 import { RequestHandler } from 'express';
 import OpenAI from 'openai';
 import { ServerError } from '../types';
-import { SYSTEM_PROMPT } from './prompts.js';
+import { SYSTEM_PROMPT } from '../prompts/prompts.js';
+import { SYSTEM_PROMPT_ReAct } from '../prompts/prompts_ReAct.js';
 
 const openai = new OpenAI();
 
-export const queryOpenAI: RequestHandler = async (_req, res, next) => {
+export const queryOpenAI: RequestHandler = async (req, res, next) => {
   const { naturalLanguageQuery } = res.locals;
   if (!naturalLanguageQuery) {
     const error: ServerError = {
@@ -16,10 +17,14 @@ export const queryOpenAI: RequestHandler = async (_req, res, next) => {
     return next(error);
   }
 
+  // Determine prompt to use based on body selection
+  const promptType = req.body?.promptType;
+  const selectedPrompt = promptType === 'react' ? SYSTEM_PROMPT_ReAct : SYSTEM_PROMPT;
+
   try {
     const response = await openai.responses.create({
       model: 'gpt-4o-mini',
-      input: `${SYSTEM_PROMPT}\n\nUser Question: ${naturalLanguageQuery}`,
+      input: `${selectedPrompt}\n\nUser Question: ${naturalLanguageQuery}`,
     });
 
     if (!response || !response.output_text) {

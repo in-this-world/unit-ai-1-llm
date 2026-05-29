@@ -15,9 +15,7 @@ describe('Dashboard Component', () => {
       .persist()
       .post(
         '/api',
-        JSON.stringify({
-          naturalLanguageQuery: 'Name the person with white eyes',
-        }),
+        (body: any) => body.naturalLanguageQuery === 'Name the person with white eyes',
         {
           reqheaders: {
             'Content-Type': 'application/json',
@@ -33,9 +31,7 @@ describe('Dashboard Component', () => {
       .persist()
       .post(
         '/api',
-        JSON.stringify({
-          naturalLanguageQuery: 'This API call fails',
-        }),
+        (body: any) => body.naturalLanguageQuery === 'This API call fails',
         {
           reqheaders: {
             'Content-Type': 'application/json',
