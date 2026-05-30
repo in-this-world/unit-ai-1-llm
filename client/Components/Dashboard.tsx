@@ -12,6 +12,9 @@ interface ParsedConverterResponse {
     entries: { iteration: number; fileName: string; sql: string }[];
   };
   rawLLMResponse?: string;
+  validationFailed?: boolean;
+  feedback?: string;
+  suggestions?: string[];
 }
 
 const Dashboard = () => {
@@ -32,6 +35,11 @@ const Dashboard = () => {
   const [error, setError] = useState('');
   const [outputFormat, setOutputFormat] = useState('table'); // 'table', 'csv', 'excel', 'html'
 
+  // Cognitive Verifier pre-prompt validation state
+  const [validationFailed, setValidationFailed] = useState(false);
+  const [validationFeedback, setValidationFeedback] = useState('');
+  const [validationSuggestions, setValidationSuggestions] = useState<string[]>([]);
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
@@ -40,6 +48,9 @@ const Dashboard = () => {
     setDatabaseQueryResults([]);
     setExecutionSkipped(false);
     setIterationLogs(null);
+    setValidationFailed(false);
+    setValidationFeedback('');
+    setValidationSuggestions([]);
 
     try {
       const converterResponse = await fetch('/api', {
@@ -60,12 +71,20 @@ const Dashboard = () => {
       } else {
         const parsedConverterResponse: ParsedConverterResponse =
           await converterResponse.json();
-        setDatabaseQuery(parsedConverterResponse.databaseQuery);
-        setDatabaseQueryResults(parsedConverterResponse.databaseQueryResult);
-        setExecutionSkipped(Boolean(parsedConverterResponse.executionSkipped));
-        if (parsedConverterResponse.iterationLogs) {
-          setIterationLogs(parsedConverterResponse.iterationLogs);
+        
+        if (parsedConverterResponse.validationFailed) {
+          setValidationFailed(true);
+          setValidationFeedback(parsedConverterResponse.feedback || '');
+          setValidationSuggestions(parsedConverterResponse.suggestions || []);
+        } else {
+          setDatabaseQuery(parsedConverterResponse.databaseQuery);
+          setDatabaseQueryResults(parsedConverterResponse.databaseQueryResult);
+          setExecutionSkipped(Boolean(parsedConverterResponse.executionSkipped));
+          if (parsedConverterResponse.iterationLogs) {
+            setIterationLogs(parsedConverterResponse.iterationLogs);
+          }
         }
+
         if (parsedConverterResponse.rawLLMResponse) {
           console.log(
             'Full LLM Response:\n',
@@ -295,6 +314,38 @@ const Dashboard = () => {
       </form>
 
       {error && <p className="error">{error}</p>}
+
+      {validationFailed && (
+        <div className="validation-warning-card">
+          <div className="warning-header">
+            <span className="warning-icon">⚠️</span>
+            <h3>Query Verification Feedback</h3>
+          </div>
+          <p className="warning-message">{validationFeedback}</p>
+          {validationSuggestions.length > 0 && (
+            <div className="suggestions-section">
+              <p className="suggestions-label">Try one of these alternative questions:</p>
+              <div className="suggestion-pills-container">
+                {validationSuggestions.map((suggestion, idx) => (
+                  <button
+                    key={idx}
+                    type="button"
+                    className="suggestion-pill"
+                    onClick={() => {
+                      setNaturalLanguageQuery(suggestion);
+                      setValidationFailed(false);
+                      setValidationFeedback('');
+                      setValidationSuggestions([]);
+                    }}
+                  >
+                    {suggestion}
+                  </button>
+                ))}
+              </div>
+            </div>
+          )}
+        </div>
+      )}
 
       {executionSkipped && iterationLogs && (
         <div className="result">

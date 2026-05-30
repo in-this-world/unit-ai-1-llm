@@ -3,7 +3,7 @@ import cors from 'cors';
 import 'dotenv/config';
 
 import { parseNaturalLanguageQuery } from './controllers/naturalLanguageController.js';
-import { queryOpenAI } from './controllers/openaiController.js';
+import { queryOpenAI, verifyQuery } from './controllers/openaiController.js';
 import { queryStarWarsDatabase } from './controllers/databaseController.js';
 
 import { ServerError } from './types';
@@ -16,6 +16,7 @@ app.use(express.json());
 app.post(
   '/api',
   parseNaturalLanguageQuery,
+  verifyQuery,
   queryOpenAI,
   queryStarWarsDatabase,
   (_req, res) => {

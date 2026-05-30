@@ -14,6 +14,9 @@ jest.mock('./controllers/openaiController', () => ({
       "SELECT name FROM public.people WHERE eye_color = 'white';";
     next();
   }),
+  verifyQuery: jest.fn((_req, _res, next) => {
+    next();
+  }),
 }));
 
 jest.mock('./controllers/databaseController', () => ({

@@ -1,4 +1,4 @@
-import { queryOpenAI } from './openaiController';
+import { queryOpenAI, verifyQuery } from './openaiController';
 import { Request, Response, NextFunction } from 'express';
 import OpenAI from 'openai';
 
@@ -91,5 +91,96 @@ describe('queryOpenAI (Responses API)', () => {
         message: { err: 'An error occurred while querying OpenAI' },
       })
     );
+  });
+});
+
+describe('verifyQuery (Cognitive Verifier)', () => {
+  let req: Partial<Request>;
+  let res: Partial<Response>;
+  let next: NextFunction;
+  let mockOpenAI: any;
+
+  beforeEach(() => {
+    req = {};
+    res = { locals: {} };
+    next = jest.fn();
+    mockOpenAI = new OpenAI() as unknown as MockOpenAI;
+    mockOpenAI.responses.create.mockReset();
+    jest.clearAllMocks();
+  });
+
+  it('returns an error if no naturalLanguageQuery is provided', async () => {
+    await verifyQuery(req as Request, res as Response, next);
+
+    expect(next).toHaveBeenCalledWith({
+      log: 'Verifier middleware did not receive a query',
+      status: 500,
+      message: { err: 'An error occurred before verifying the query' },
+    });
+  });
+
+  it('should call next() if the query is verified as valid', async () => {
+    res.locals!.naturalLanguageQuery = 'Who is Darth Vader?';
+    (mockOpenAI.responses.create as jest.Mock).mockResolvedValue({
+      output_text: JSON.stringify({
+        valid: true,
+        feedback: '',
+        suggestions: []
+      }),
+    });
+
+    await verifyQuery(req as Request, res as Response, next);
+
+    expect(next).toHaveBeenCalledWith();
+    expect(next).toHaveBeenCalledTimes(1);
+  });
+
+  it('should return 200 with validationFailed, feedback and suggestions if query is out-of-scope', async () => {
+    res.locals!.naturalLanguageQuery = 'How much is a Tesla?';
+    (mockOpenAI.responses.create as jest.Mock).mockResolvedValue({
+      output_text: JSON.stringify({
+        valid: false,
+        feedback: 'Our database contains Star Wars characters, planets, species, and vessels, but no Tesla cars.',
+        suggestions: ['Show me all vessels and their cost', 'List all planets', 'How much does a Millennium Falcon cost?']
+      }),
+    });
+
+    const jsonMock = jest.fn();
+    const statusMock = jest.fn().mockReturnValue({ json: jsonMock });
+    res.status = statusMock as any;
+
+    await verifyQuery(req as Request, res as Response, next);
+
+    expect(statusMock).toHaveBeenCalledWith(200);
+    expect(jsonMock).toHaveBeenCalledWith({
+      validationFailed: true,
+      feedback: 'Our database contains Star Wars characters, planets, species, and vessels, but no Tesla cars.',
+      suggestions: ['Show me all vessels and their cost', 'List all planets', 'How much does a Millennium Falcon cost?']
+    });
+    expect(next).not.toHaveBeenCalled();
+  });
+
+  it('should fallback by calling next() on verification error (robustness)', async () => {
+    res.locals!.naturalLanguageQuery = 'Who is Darth Vader?';
+    (mockOpenAI.responses.create as jest.Mock).mockRejectedValue(
+      new Error('OpenAI connection failed')
+    );
+
+    await verifyQuery(req as Request, res as Response, next);
+
+    expect(next).toHaveBeenCalledWith();
+    expect(next).toHaveBeenCalledTimes(1);
+  });
+
+  it('should fallback by calling next() on invalid JSON response (robustness)', async () => {
+    res.locals!.naturalLanguageQuery = 'Who is Darth Vader?';
+    (mockOpenAI.responses.create as jest.Mock).mockResolvedValue({
+      output_text: 'Invalid plain text response from LLM',
+    });
+
+    await verifyQuery(req as Request, res as Response, next);
+
+    expect(next).toHaveBeenCalledWith();
+    expect(next).toHaveBeenCalledTimes(1);
   });
 });

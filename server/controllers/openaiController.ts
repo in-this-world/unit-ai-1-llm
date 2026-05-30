@@ -5,6 +5,7 @@ import { mkdir, writeFile } from 'fs/promises';
 import { ServerError } from '../types';
 import { SYSTEM_PROMPT } from '../prompts/prompts.js';
 import { SYSTEM_PROMPT_ReAct } from '../prompts/prompts_ReAct.js';
+import { SYSTEM_PROMPT_VERIFICATION } from '../prompts/prompts_verification.js';
 
 const openai = new OpenAI();
 
@@ -22,6 +23,65 @@ const extractSqlQuery = (rawText: string): string => {
     sqlQuery = sqlQuery.split('```')[1].split('```')[0].trim();
   }
   return sqlQuery;
+};
+
+export const verifyQuery: RequestHandler = async (req, res, next) => {
+  const { naturalLanguageQuery } = res.locals;
+  if (!naturalLanguageQuery) {
+    const error: ServerError = {
+      log: 'Verifier middleware did not receive a query',
+      status: 500,
+      message: { err: 'An error occurred before verifying the query' },
+    };
+    return next(error);
+  }
+
+  try {
+    const response = await openai.responses.create({
+      model: 'gpt-4o-mini',
+      input: `${SYSTEM_PROMPT_VERIFICATION}\n\nUser Question: ${naturalLanguageQuery}`,
+    });
+
+    if (!response || !response.output_text) {
+      const error: ServerError = {
+        log: 'OpenAI did not return a verification response',
+        status: 500,
+        message: { err: 'An error occurred while verifying your query' },
+      };
+      return next(error);
+    }
+
+    let cleanText = response.output_text.trim();
+    if (cleanText.startsWith('```json')) {
+      cleanText = cleanText.slice(7);
+    }
+    if (cleanText.startsWith('```')) {
+      cleanText = cleanText.slice(3);
+    }
+    if (cleanText.endsWith('```')) {
+      cleanText = cleanText.slice(0, -3);
+    }
+    cleanText = cleanText.trim();
+
+    const parsedResponse = JSON.parse(cleanText);
+
+    if (parsedResponse.valid === true) {
+      return next();
+    }
+
+    // early bypass for out-of-scope queries
+    res.status(200).json({
+      validationFailed: true,
+      feedback: parsedResponse.feedback || 'The request is not supported by our Star Wars database.',
+      suggestions: Array.isArray(parsedResponse.suggestions) ? parsedResponse.suggestions : [],
+    });
+    return;
+  } catch (err) {
+    console.error('Verifier error (falling back to standard query flow):', err);
+    // Robustness: if verification fails due to a transient OpenAI or parsing issue,
+    // let the query pass through to standard SQL generation.
+    return next();
+  }
 };
 
 export const queryOpenAI: RequestHandler = async (req, res, next) => {
