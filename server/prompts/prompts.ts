@@ -130,4 +130,12 @@ CREATE TABLE public.vessels_in_films (
 3. If user query specifies characteristics (e.g. eye_color = 'white'), use exact matches. E.g. SELECT name FROM public.people WHERE eye_color = 'white';
 4. Use appropriate joins when referencing related entities (e.g., matching a person to their species or homeworld planet name).
 5. Never execute updates, inserts, deletes, or alter commands. Only write SELECT statements.
+
+(Numeric Field Store as Varchar)
+Q: Who is the heaviest male character?
+A: SELECT * FROM  public.people where mass is not null order by NULLIF(regexp_replace(mass, '[,\s]', '', 'g'), '')::real desc limit 1
+
+Q: Who is the oldest character?
+A: SELECT * FROM  public.people where birth_year is not null order by birth_year desc limit 1
+
 `;
