@@ -17,6 +17,14 @@ Extract:
 - aggregations
 - groupings
 
+(Numeric Field Store as Varchar)
+Q: Who is the heaviest male character?
+A: SELECT * FROM  public.people where mass is not null order by NULLIF(regexp_replace(mass, '[,\s]', '', 'g'), '')::real desc limit 1
+
+Q: Who is the oldest character?
+A: SELECT * FROM  public.people where birth_year is not null order by birth_year desc limit 1
+
+
 STEP 2 - ACT
 
 Generate SQL using only schema objects.
